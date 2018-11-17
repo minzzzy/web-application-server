@@ -22,7 +22,8 @@
     * 요청메세지의 첫 줄을 파싱해서 url을 뽑아내고 webapp directory 아래 해당 파일을 찾아 응답의 body에 넣어서 보냄
 
 ### 요구사항 2 - get 방식으로 회원가입
-* 
+* What to know
+  * 요청 url에 parameter를 붙여서 보내면 파싱을 해서 데이터를 전달
 
 ### 요구사항 3 - post 방식으로 회원가입
 * 

@@ -1,5 +1,7 @@
 package webserver;
 
+import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
@@ -8,6 +10,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -31,7 +34,15 @@ public class RequestHandler extends Thread {
                 return;
             }
 
-            byte[] body = getBody(line);
+            String url = HttpRequestUtils.parseUrl(line);
+            String paramString = HttpRequestUtils.getParams(url);
+
+            if (paramString != null) {
+                Map<String, String> params = HttpRequestUtils.parseQueryString(paramString);
+                DataBase.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
+            }
+
+            byte[] body = getBody(HttpRequestUtils.getPath(url));
 
             while (!"".equals(line)) {
                 log.debug("header: {}", line);
@@ -46,8 +57,8 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private byte[] getBody(String firstHeaderLine) throws IOException {
-        Path path = new File(HOME_PATH + HttpRequestUtils.parseUrl(firstHeaderLine)).toPath();
+    private byte[] getBody(String url) throws IOException {
+        Path path = new File(HOME_PATH + url).toPath();
         if (path.toString().equals(HOME_PATH)) {
             return "Hello world".getBytes();
         }

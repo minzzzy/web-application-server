@@ -33,6 +33,26 @@ public class HttpRequestUtils {
         return header.split(" ")[1];
     }
 
+    public static String getPath(String url) {
+        int index = getIndex(url);
+        if (index == -1) {
+            return url;
+        }
+        return url.substring(0, index);
+    }
+
+    public static String getParams(String url) {
+        int index = getIndex(url);
+        if (index == -1) {
+            return null;
+        }
+        return url.substring(index + 1);
+    }
+
+    private static int getIndex(String url) {
+        return url.indexOf("?");
+    }
+
     private static Map<String, String> parseValues(String values, String separator) {
         if (Strings.isNullOrEmpty(values)) {
             return Maps.newHashMap();

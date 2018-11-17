@@ -82,4 +82,16 @@ public class HttpRequestUtilsTest {
         String header = "";
         assertThat(HttpRequestUtils.parseUrl(header), nullValue());
     }
+
+    @Test
+    public void getPath() {
+        String url = "/user";
+        assertThat(HttpRequestUtils.getPath(url), is("/user"));
+    }
+
+    @Test
+    public void getPathWithParam() {
+        String url = "/user/create?userId=ming&password=password";
+        assertThat(HttpRequestUtils.getPath(url), is("/user/create"));
+    }
 }
