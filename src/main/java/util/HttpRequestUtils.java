@@ -1,11 +1,11 @@
 package util;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 public class HttpRequestUtils {
     /**
@@ -24,6 +24,13 @@ public class HttpRequestUtils {
      */
     public static Map<String, String> parseCookies(String cookies) {
         return parseValues(cookies, ";");
+    }
+
+    public static String parseUrl(String header) {
+        if (header.isEmpty()) {
+            return null;
+        }
+        return header.split(" ")[1];
     }
 
     private static Map<String, String> parseValues(String values, String separator) {
