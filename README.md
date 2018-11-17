@@ -26,7 +26,8 @@
   * 요청 url에 parameter를 붙여서 보내면 파싱을 해서 데이터를 전달
 
 ### 요구사항 3 - post 방식으로 회원가입
-* 
+* What to know
+  * POST로 요청을 하면 form data가 body를 통해 전달
 
 ### 요구사항 4 - redirect 방식으로 이동
 * 

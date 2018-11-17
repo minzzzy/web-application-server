@@ -5,6 +5,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
 
 import java.io.*;
 import java.net.Socket;
@@ -35,21 +36,27 @@ public class RequestHandler extends Thread {
             }
 
             String url = HttpRequestUtils.parseUrl(line);
-            String paramString = HttpRequestUtils.getParams(url);
 
-            if (paramString != null) {
-                Map<String, String> params = HttpRequestUtils.parseQueryString(paramString);
-                DataBase.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
-            }
-
-            byte[] body = getBody(HttpRequestUtils.getPath(url));
-
+            int contentLength = 0;
             while (!"".equals(line)) {
                 log.debug("header: {}", line);
+                HttpRequestUtils.Pair pair = HttpRequestUtils.parseHeader(line);
+                if (pair != null && pair.getKey().equals("Content-Length")) {
+                    contentLength = Integer.parseInt(pair.getValue());
+                }
                 line = bufferedReader.readLine();
             }
 
+            String requestBody = IOUtils.readData(bufferedReader, contentLength);
+            if (!requestBody.isEmpty()) {
+                Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
+                DataBase.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
+            }
+
+            log.debug("requestBody : {}", requestBody);
+
             DataOutputStream dos = new DataOutputStream(out);
+            byte[] body = getBody(HttpRequestUtils.getPath(url));
             response200Header(dos, body.length);
             responseBody(dos, body);
         } catch (IOException e) {
