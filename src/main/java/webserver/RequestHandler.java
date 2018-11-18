@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class RequestHandler extends Thread {
@@ -34,34 +35,64 @@ public class RequestHandler extends Thread {
             if (line == null) {
                 return;
             }
+            log.debug("header : {}", line);
 
-            String url = HttpRequestUtils.parseUrl(line);
-
-            int contentLength = 0;
-            while (!"".equals(line)) {
-                log.debug("header: {}", line);
-                HttpRequestUtils.Pair pair = HttpRequestUtils.parseHeader(line);
-                if (pair != null && pair.getKey().equals("Content-Length")) {
-                    contentLength = Integer.parseInt(pair.getValue());
-                }
-                line = bufferedReader.readLine();
-            }
-
-            String requestBody = IOUtils.readData(bufferedReader, contentLength);
-            if (!requestBody.isEmpty()) {
-                Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
-                DataBase.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
-            }
-
-            log.debug("requestBody : {}", requestBody);
+            HttpRequestUtils.StartLine startLine = HttpRequestUtils.parseStartLine(line);
+            log.debug("url : {}", startLine.getUrl());
 
             DataOutputStream dos = new DataOutputStream(out);
-            byte[] body = getBody(HttpRequestUtils.getPath(url));
-            response200Header(dos, body.length);
+
+            if (startLine.getHttpMethod().equals("POST")) {
+                String requestBody = IOUtils.readData(bufferedReader, findContentLength(getHeader(bufferedReader)));
+                saveUser(requestBody);
+                log.debug("requestBody : {}", requestBody);
+            }
+
+            byte[] body = null;
+            String path = HttpRequestUtils.getPath(startLine.getUrl());
+            if (path.equals("/user/create")) {
+                String redirectPath = "/index.html";
+                body = getBody(redirectPath);
+                response302Header(dos, redirectPath);
+            } else {
+                body = getBody(path);
+                response200Header(dos, body.length);
+            }
             responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private void saveUser(String requestBody) {
+        if (requestBody.isEmpty()) {
+            return;
+        }
+        Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
+        if (!params.containsKey("userId") || !params.containsKey("password") || !params.containsKey("name") || !params.containsKey("email")) {
+            return;
+        }
+        DataBase.addUser(new User(params.get("userId"), params.get("password"), params.get("name"), params.get("email")));
+        log.debug("Save user: {}", DataBase.findUserById(params.get("userId")));
+    }
+
+    private ArrayList<String> getHeader(BufferedReader bufferedReader) throws IOException {
+        String line = bufferedReader.readLine();
+        ArrayList<String> lines = new ArrayList<>();
+        while (!"".equals(line)) {
+            log.debug("header: {}", line);
+            line = bufferedReader.readLine();
+            lines.add(line);
+        }
+        return lines;
+    }
+
+    private int findContentLength(ArrayList<String> lines) {
+        return lines.stream().map(HttpRequestUtils::parseHeader)
+                .filter(pair -> pair != null && pair.getKey().equals("Content-Length"))
+                .map(pair -> Integer.parseInt(pair.getValue()))
+                .findAny()
+                .orElse(0);
     }
 
     private byte[] getBody(String url) throws IOException {
@@ -78,6 +109,15 @@ public class RequestHandler extends Thread {
             dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos, String location) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+            dos.writeBytes("Location: " + location + "\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }

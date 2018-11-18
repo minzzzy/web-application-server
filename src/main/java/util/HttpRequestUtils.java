@@ -26,11 +26,12 @@ public class HttpRequestUtils {
         return parseValues(cookies, ";");
     }
 
-    public static String parseUrl(String header) {
+    public static StartLine parseStartLine(String header) {
         if (header.isEmpty()) {
             return null;
         }
-        return header.split(" ")[1];
+        String[] words = header.split(" ");
+        return new StartLine(words[0], words[1]);
     }
 
     public static String getPath(String url) {
@@ -39,14 +40,6 @@ public class HttpRequestUtils {
             return url;
         }
         return url.substring(0, index);
-    }
-
-    public static String getParams(String url) {
-        int index = getIndex(url);
-        if (index == -1) {
-            return null;
-        }
-        return url.substring(index + 1);
     }
 
     private static int getIndex(String url) {
@@ -78,6 +71,24 @@ public class HttpRequestUtils {
 
     public static Pair parseHeader(String header) {
         return getKeyValue(header, ": ");
+    }
+
+    public static class StartLine {
+        private String httpMethod;
+        private String url;
+
+        public StartLine(String httpMethod, String url) {
+            this.httpMethod = httpMethod;
+            this.url = url;
+        }
+
+        public String getHttpMethod() {
+            return httpMethod;
+        }
+
+        public String getUrl() {
+            return url;
+        }
     }
 
     public static class Pair {

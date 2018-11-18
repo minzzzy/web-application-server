@@ -30,7 +30,8 @@
   * POST로 요청을 하면 form data가 body를 통해 전달
 
 ### 요구사항 4 - redirect 방식으로 이동
-* 
+* What to know
+  * 응답의 status code를 302로 보내줄 경우 redirect 되는 body의 내용 뿐만 아니라 response header에 location도 바꿔줘야 url이 변경된다.
 
 ### 요구사항 5 - cookie
 * 
