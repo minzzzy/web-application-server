@@ -38,22 +38,31 @@ public class RequestHandler extends Thread {
             log.debug("header : {}", line);
 
             HttpRequestUtils.StartLine startLine = HttpRequestUtils.parseStartLine(line);
-            log.debug("url : {}", startLine.getUrl());
 
             DataOutputStream dos = new DataOutputStream(out);
-
-            if (startLine.getHttpMethod().equals("POST")) {
-                String requestBody = IOUtils.readData(bufferedReader, findContentLength(getHeader(bufferedReader)));
-                saveUser(requestBody);
-                log.debug("requestBody : {}", requestBody);
-            }
 
             byte[] body = null;
             String path = HttpRequestUtils.getPath(startLine.getUrl());
             if (path.equals("/user/create")) {
+                String requestBody = IOUtils.readData(bufferedReader, findContentLength(getHeader(bufferedReader)));
+                saveUser(getParams(requestBody));
+                log.debug("requestBody : {}", requestBody);
+
                 String redirectPath = "/index.html";
                 body = getBody(redirectPath);
-                response302Header(dos, redirectPath);
+                response302Header(dos, redirectPath, false);
+            } else if (path.equals("/user/login")) {
+                String requestBody = IOUtils.readData(bufferedReader, findContentLength(getHeader(bufferedReader)));
+
+                boolean logined = isLoginUser(getParams(requestBody));
+                String redirectPath = null;
+                if (logined) {
+                    redirectPath = "/index.html";
+                } else {
+                    redirectPath = "/user/login_failed.html";
+                }
+                body = getBody(redirectPath);
+                response302Header(dos, redirectPath, logined);
             } else {
                 body = getBody(path);
                 response200Header(dos, body.length);
@@ -64,11 +73,14 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void saveUser(String requestBody) {
+    private Map<String, String> getParams(String requestBody) {
         if (requestBody.isEmpty()) {
-            return;
+            return null;
         }
-        Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
+        return HttpRequestUtils.parseQueryString(requestBody);
+    }
+
+    private void saveUser(Map<String, String> params) {
         if (!params.containsKey("userId") || !params.containsKey("password") || !params.containsKey("name") || !params.containsKey("email")) {
             return;
         }
@@ -76,12 +88,20 @@ public class RequestHandler extends Thread {
         log.debug("Save user: {}", DataBase.findUserById(params.get("userId")));
     }
 
+    private boolean isLoginUser(Map<String, String> params) {
+        User user = DataBase.findUserById(params.get("userId"));
+        if (user != null && user.getPassword().equals(params.get("password"))) {
+            return true;
+        }
+        return false;
+    }
+
     private ArrayList<String> getHeader(BufferedReader bufferedReader) throws IOException {
         String line = bufferedReader.readLine();
         ArrayList<String> lines = new ArrayList<>();
         while (!"".equals(line)) {
-            log.debug("header: {}", line);
             line = bufferedReader.readLine();
+            log.debug("header: {}", line);
             lines.add(line);
         }
         return lines;
@@ -114,10 +134,16 @@ public class RequestHandler extends Thread {
         }
     }
 
-    private void response302Header(DataOutputStream dos, String location) {
+    private void response302Header(DataOutputStream dos, String location, boolean isLogined) {
         try {
             dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
             dos.writeBytes("Location: " + location + "\r\n");
+            if (isLogined) {
+                dos.writeBytes("Set-Cookie: logined=true\r\n");
+            } else {
+                dos.writeBytes("Set-Cookie: logined=false\r\n");
+            }
+            dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
