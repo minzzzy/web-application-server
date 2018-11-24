@@ -43,15 +43,14 @@ public class RequestHandler extends Thread {
 
             DataOutputStream dos = new DataOutputStream(out);
             ArrayList<String> lines = getHeader(bufferedReader);
-
             String path = HttpRequestUtils.getPath(startLine.getUrl());
+
             if (path.equals("/user/create")) {
                 String requestBody = IOUtils.readData(bufferedReader, findContentLength(lines));
                 saveUser(getParams(requestBody));
                 log.debug("requestBody : {}", requestBody);
 
-                String redirectPath = "/index.html";
-                response302Header(dos, redirectPath, false);
+                response302Header(dos, "/index.html", false);
             } else if (path.equals("/user/login")) {
                 String requestBody = IOUtils.readData(bufferedReader, findContentLength(lines));
                 boolean logined = successLogin(getParams(requestBody));
@@ -63,12 +62,12 @@ public class RequestHandler extends Thread {
                     response302Header(dos, "/user/login.html", logined);
                 } else {
                     byte[] body = userListHtml(DataBase.findAll()).getBytes();
-                    response200Header(dos, body.length);
+                    response200Header(dos, body.length, path);
                     responseBody(dos, body);
                 }
             } else {
                 byte[] body = getBody(path);
-                response200Header(dos, body.length);
+                response200Header(dos, body.length, path);
                 responseBody(dos, body);
             }
         } catch (IOException e) {
@@ -82,7 +81,6 @@ public class RequestHandler extends Thread {
         }
         return false;
     }
-
 
     private Map<String, String> getParams(String requestBody) {
         if (requestBody.isEmpty()) {
@@ -142,15 +140,23 @@ public class RequestHandler extends Thread {
         return Files.readAllBytes(path);
     }
 
-    private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+    private void response200Header(DataOutputStream dos, int lengthOfBodyContent, String path) {
         try {
             dos.writeBytes("HTTP/1.1 200 OK \r\n");
-            dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
+            dos.writeBytes(getContentType(path));
             dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
             dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+    }
+
+    private String getContentType(String path) {
+        String fileExtension = path.replaceAll("^.*\\.(.*)$", "$1");
+        if (fileExtension.equals("css")) {
+            return "Content-Type: text/css\r\n";
+        }
+        return "Content-Type: text/html;charset=utf-8\r\n";
     }
 
     private void response302Header(DataOutputStream dos, String location, boolean isLogined) {
