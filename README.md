@@ -34,7 +34,8 @@
   * 응답의 status code를 302로 보내줄 경우 redirect 되는 body의 내용 뿐만 아니라 response header에 location도 바꿔줘야 url이 변경된다.
 
 ### 요구사항 5 - cookie
-* 
+* What to know
+  * login이 성공하면 response header에 `Set-Cookie: logined=true`를 보내면 응답에서 `Cookie: logined=true`를 보내고 이를 통해 로그인이 되었는지 확인할 수 있다. 
 
 ### 요구사항 6 - stylesheet 적용
 * 
