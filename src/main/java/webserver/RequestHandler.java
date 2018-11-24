@@ -41,7 +41,6 @@ public class RequestHandler extends Thread {
 
             DataOutputStream dos = new DataOutputStream(out);
 
-            byte[] body = null;
             String path = HttpRequestUtils.getPath(startLine.getUrl());
             if (path.equals("/user/create")) {
                 String requestBody = IOUtils.readData(bufferedReader, findContentLength(getHeader(bufferedReader)));
@@ -49,25 +48,18 @@ public class RequestHandler extends Thread {
                 log.debug("requestBody : {}", requestBody);
 
                 String redirectPath = "/index.html";
-                body = getBody(redirectPath);
                 response302Header(dos, redirectPath, false);
             } else if (path.equals("/user/login")) {
                 String requestBody = IOUtils.readData(bufferedReader, findContentLength(getHeader(bufferedReader)));
 
                 boolean logined = isLoginUser(getParams(requestBody));
-                String redirectPath = null;
-                if (logined) {
-                    redirectPath = "/index.html";
-                } else {
-                    redirectPath = "/user/login_failed.html";
-                }
-                body = getBody(redirectPath);
+                String redirectPath = (logined) ? "/index.html" : "/user/login_failed.html";
                 response302Header(dos, redirectPath, logined);
             } else {
-                body = getBody(path);
+                byte[] body = getBody(path);
                 response200Header(dos, body.length);
+                responseBody(dos, body);
             }
-            responseBody(dos, body);
         } catch (IOException e) {
             log.error(e.getMessage());
         }
