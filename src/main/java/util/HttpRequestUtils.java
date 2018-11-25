@@ -42,6 +42,15 @@ public class HttpRequestUtils {
         return url.substring(0, index);
     }
 
+    public static String getQueryString(String url) {
+        int index = getIndex(url);
+        if (index == -1) {
+            return url;
+        }
+        return url.substring(index + 1);
+    }
+
+
     private static int getIndex(String url) {
         return url.indexOf("?");
     }
@@ -72,7 +81,6 @@ public class HttpRequestUtils {
     public static Pair parseHeader(String header) {
         return getKeyValue(header, ": ");
     }
-
     public static class StartLine {
         private String httpMethod;
         private String url;

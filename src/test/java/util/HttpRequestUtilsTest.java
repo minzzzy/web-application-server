@@ -84,6 +84,12 @@ public class HttpRequestUtilsTest {
     }
 
     @Test
+    public void getQueryString() {
+        String url = "/user/create?userId=ming&password=password";
+        assertThat(HttpRequestUtils.getQueryString(url), is("userId=ming&password=password"));
+    }
+
+    @Test
     public void parseStartLine() {
         String header = "GET /index.html HTTP/1.1";
         HttpRequestUtils.StartLine startLine = HttpRequestUtils.parseStartLine(header);
