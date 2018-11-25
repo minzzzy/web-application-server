@@ -3,7 +3,10 @@ package webserver;
 import util.HttpRequestUtils;
 import util.IOUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,73 +21,33 @@ public class HttpRequest {
         this.headers = new HashMap<>();
     }
 
-    public HttpRequest(InputStream in) {
+    public HttpRequest(InputStream in) throws IOException {
         this();
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            String requestLine = bufferedReader.readLine();
-            String[] requestLineWords = parseRequestLine(requestLine);
-            String method = parseMethod(requestLineWords);
-            if (method == null) {
-                return;
-            }
-
-            String url = parseUrl(requestLineWords);
-            if (url == null) {
-                return;
-            }
-
-            this.headers = parseHeaders(bufferedReader);
-            this.path = HttpRequestUtils.getPath(url);
-            this.method = method;
-
-            if (method.equals("GET")) {
-                this.parameters = parseParams(HttpRequestUtils.getQueryString(url));
-                return;
-            }
-
-            if (method.equals("POST")) {
-                this.parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
-                return;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        String requestLine = bufferedReader.readLine();
+        String[] requestLineWords = parseRequestLine(requestLine);
+        String method = parseMethod(requestLineWords);
+        if (method == null) {
+            return;
         }
-    }
 
-    public HttpRequest(FileInputStream in) {
-        this();
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            String requestLine = bufferedReader.readLine();
-            String[] requestLineWords = parseRequestLine(requestLine);
-            String method = parseMethod(requestLineWords);
-            if (method == null) {
-                return;
-            }
+        String url = parseUrl(requestLineWords);
+        if (url == null) {
+            return;
+        }
 
-            String url = parseUrl(requestLineWords);
-            if (url == null) {
-                return;
-            }
+        this.headers = parseHeaders(bufferedReader);
+        this.path = HttpRequestUtils.getPath(url);
+        this.method = method;
 
-            this.headers = parseHeaders(bufferedReader);
-            this.path = HttpRequestUtils.getPath(url);
-            this.method = method;
+        if (method.equals("GET")) {
+            this.parameters = parseParams(HttpRequestUtils.getQueryString(url));
+            return;
+        }
 
-            if (method.equals("GET")) {
-                this.parameters = parseParams(HttpRequestUtils.getQueryString(url));
-                return;
-            }
-
-            if (method.equals("POST")) {
-                this.parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
-                return;
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (method.equals("POST")) {
+            this.parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
+            return;
         }
     }
 
