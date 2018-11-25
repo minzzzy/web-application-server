@@ -6,23 +6,34 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class HttpResponse {
     private static String homePath = "./webapp";
     private DataOutputStream dos;
+    private Map<String, String> headers = new HashMap<>();
 
     public HttpResponse(OutputStream outputStream) {
         this.dos = new DataOutputStream(outputStream);
     }
 
-    public void forward(String path) throws IOException {
-        byte[] body = getBody(path);
+    public void forward(String path, byte[] body) throws IOException {
         response200Header(body.length, path);
         responseBody(body);
     }
 
+    public void forward(String path) throws IOException {
+        byte[] body = getBody(path);
+        forward(path, body);
+    }
+
     public void sendRedirect(String path) throws IOException {
-        response302Header(path);
+        dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+        dos.writeBytes("Location: " + path + "\r\n");
+        addResponseHeader();
+        dos.writeBytes("\r\n");
     }
 
     private void responseBody(byte[] body) throws IOException {
@@ -36,14 +47,15 @@ public class HttpResponse {
         dos.writeBytes("\r\n");
     }
 
-    public void addHeader(String key, String value) throws IOException {
-        dos.writeBytes(key + ": " + value + "\r\n");
+    public void addHeader(String key, String value) {
+        headers.put(key, value);
     }
 
-    private void response302Header(String location) throws IOException {
-        dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
-        dos.writeBytes("Location: " + location + "\r\n");
-        dos.writeBytes("\r\n");
+    private void addResponseHeader() throws IOException {
+        Set<String> keys = headers.keySet();
+        for (String key : keys) {
+            dos.writeBytes(key + ": " + headers.get(key) + "\r\n");
+        }
     }
 
     private String getContentType(String path) {

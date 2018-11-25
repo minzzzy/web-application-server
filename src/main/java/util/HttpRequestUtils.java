@@ -45,7 +45,7 @@ public class HttpRequestUtils {
     public static String getQueryString(String url) {
         int index = getIndex(url);
         if (index == -1) {
-            return url;
+            return null;
         }
         return url.substring(index + 1);
     }

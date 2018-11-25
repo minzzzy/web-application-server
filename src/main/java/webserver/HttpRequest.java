@@ -1,5 +1,7 @@
 package webserver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
 import util.IOUtils;
 
@@ -11,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequest {
+    private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
     private String method;
     private String path;
     private Map<String, String> parameters;
@@ -41,14 +44,21 @@ public class HttpRequest {
         this.method = method;
 
         if (method.equals("GET")) {
-            this.parameters = parseParams(HttpRequestUtils.getQueryString(url));
-            return;
+            String queryString = HttpRequestUtils.getQueryString(url);
+            if (queryString == null) {
+                return;
+            }
+            this.parameters = parseParams(queryString);
         }
 
         if (method.equals("POST")) {
             this.parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
             return;
         }
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getMethod() {
@@ -94,6 +104,7 @@ public class HttpRequest {
     }
 
     private String[] parseRequestLine(String requestLine) {
+        log.debug("requestLine: {}", requestLine);
         return requestLine.split(" ");
     }
 
@@ -108,6 +119,7 @@ public class HttpRequest {
             HttpRequestUtils.Pair pair = HttpRequestUtils.parseHeader(line);
             headers.put(pair.getKey(), pair.getValue());
             line = bufferedReader.readLine();
+            log.debug("line: {}", line);
         }
         return headers;
     }
