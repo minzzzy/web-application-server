@@ -1,5 +1,7 @@
 package webserver;
 
+import exception.InvalidRequestLineException;
+import exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
@@ -28,33 +30,36 @@ public class HttpRequest {
         this();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
         String requestLine = bufferedReader.readLine();
-        String[] requestLineWords = parseRequestLine(requestLine);
-        String method = parseMethod(requestLineWords);
-        if (method == null) {
+        if (requestLine == null) {
             return;
         }
 
-        String url = parseUrl(requestLineWords);
-        if (url == null) {
-            return;
-        }
+        processRequestLine(requestLine);
 
         this.headers = parseHeaders(bufferedReader);
-        this.path = HttpRequestUtils.getPath(url);
-        this.method = method;
-
-        if (method.equals("GET")) {
-            String queryString = HttpRequestUtils.getQueryString(url);
-            if (queryString == null) {
-                return;
-            }
-            this.parameters = parseParams(queryString);
-        }
 
         if (method.equals("POST")) {
             this.parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
             return;
         }
+    }
+
+    private void processRequestLine(String requestLine) {
+        String[] words = parseRequestLine(requestLine);
+        method = parseMethod(words);
+        path = parseUrlToPath(words);
+
+        if (method.equals("POST")) {
+            return;
+        }
+
+        String queryString = HttpRequestUtils.getQueryString(words[1]);
+
+        if (queryString == null) {
+            return;
+        }
+
+        this.parameters = parseParams(queryString);
     }
 
     public void setPath(String path) {
@@ -85,27 +90,29 @@ public class HttpRequest {
         return this.headers.get(key);
     }
 
-    // Todo: null로 return 해주지 않는 방법은?
     private String parseMethod(String[] words) {
         String method = words[0].trim();
-        if (method.equals("GET") || method.equals("POST")) {
-            return method;
+        if (!method.equals("GET") && !method.equals("POST")) {
+            throw new NotFoundException();
         }
-        return null;
+        return method;
     }
 
-    // Todo: null로 return 해주지 않는 방법은?
-    private String parseUrl(String[] words) {
-        String path = words[1].trim();
-        if (!path.isEmpty()) {
-            return path;
+    private String parseUrlToPath(String[] words) {
+        String url = words[1].trim();
+        if (url.isEmpty()) {
+            throw new NotFoundException();
         }
-        return null;
+        return HttpRequestUtils.getPath(url);
     }
 
     private String[] parseRequestLine(String requestLine) {
         log.debug("requestLine: {}", requestLine);
-        return requestLine.split(" ");
+        String[] words = requestLine.split(" ");
+        if (words.length != 3) {
+            throw new InvalidRequestLineException();
+        }
+        return words;
     }
 
     private Map<String, String> parseParams(String queryString) {

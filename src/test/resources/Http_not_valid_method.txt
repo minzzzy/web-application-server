@@ -1,0 +1,5 @@
+GETT /user/create?userId=mingId&password=password&name=ming&email=ming@gmail.com HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Accept: */*
+
