@@ -1,20 +1,21 @@
 package webserver;
 
 import exception.InvalidRequestLineException;
+import util.HttpMethod;
 import util.HttpRequestUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class RequestLine {
-    private String method;
+    private HttpMethod method;
     private String path;
     private Map<String, String> parameters = new HashMap<>();
 
     public RequestLine() {
     }
 
-    public RequestLine(String method, String path, Map<String, String> parameters) {
+    public RequestLine(HttpMethod method, String path, Map<String, String> parameters) {
         this.method = method;
         this.path = path;
         this.parameters = parameters;
@@ -27,9 +28,9 @@ public class RequestLine {
             throw new InvalidRequestLineException();
         }
 
-        method = getValidMethod(words[0]);
+        method = HttpMethod.valueOf(words[0]);
 
-        if (method.equals("POST")) {
+        if (method.equals(HttpMethod.POST)) {
             path = words[1];
             return;
         }
@@ -44,7 +45,7 @@ public class RequestLine {
         parameters = HttpRequestUtils.parseQueryString(words[1].substring(index + 1));
     }
 
-    public String getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
@@ -54,12 +55,5 @@ public class RequestLine {
 
     public Map<String, String> getParameters() {
         return parameters;
-    }
-
-    private String getValidMethod(String method) {
-        if (method.equals("GET") || method.equals("POST")) {
-            return method;
-        }
-        throw new InvalidRequestLineException();
     }
 }

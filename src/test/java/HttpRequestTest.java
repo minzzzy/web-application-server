@@ -1,5 +1,6 @@
 import exception.InvalidRequestLineException;
 import org.junit.Test;
+import util.HttpMethod;
 import webserver.HttpRequest;
 
 import java.io.File;
@@ -17,7 +18,7 @@ public class HttpRequestTest {
         InputStream in = new FileInputStream(new File(testDirectory) + "/Http_GET.txt");
         HttpRequest httpRequest = new HttpRequest(in);
 
-        assertEquals("GET", httpRequest.getMethod());
+        assertEquals(HttpMethod.GET, httpRequest.getMethod());
         assertEquals("/user/create", httpRequest.getPath());
         assertEquals("keep-alive", httpRequest.getHeader("Connection"));
         assertEquals("mingId", httpRequest.getParameter("userId"));
@@ -28,13 +29,13 @@ public class HttpRequestTest {
         InputStream in = new FileInputStream(new File(testDirectory) + "/Http_POST.txt");
         HttpRequest httpRequest = new HttpRequest(in);
 
-        assertEquals("POST", httpRequest.getMethod());
+        assertEquals(HttpMethod.POST, httpRequest.getMethod());
         assertEquals("/user/create", httpRequest.getPath());
         assertEquals("keep-alive", httpRequest.getHeader("Connection"));
         assertEquals("mingId", httpRequest.getParameter("userId"));
     }
 
-    @Test(expected = InvalidRequestLineException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void test_not_valid_method() throws IOException {
         InputStream in = new FileInputStream(new File(testDirectory) + "/Http_not_valid_method.txt");
         HttpRequest httpRequest = new HttpRequest(in);

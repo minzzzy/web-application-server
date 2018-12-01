@@ -1,11 +1,11 @@
 import exception.InvalidRequestLineException;
 import org.junit.Test;
+import util.HttpMethod;
 import webserver.RequestLine;
 
 import java.util.Map;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class RequestLineTest {
     @Test
@@ -13,8 +13,8 @@ public class RequestLineTest {
         String requestString = "GET /user/create HTTP/1.1";
         RequestLine requestLine = new RequestLine(requestString);
 
-        assertThat(requestLine.getMethod(), is("GET"));
-        assertThat(requestLine.getPath(), is("/user/create"));
+        assertEquals(requestLine.getMethod(), HttpMethod.GET);
+        assertEquals(requestLine.getPath(), "/user/create");
     }
 
     @Test
@@ -22,8 +22,8 @@ public class RequestLineTest {
         String requestString = "POST /user/create HTTP/1.1";
         RequestLine requestLine = new RequestLine(requestString);
 
-        assertThat(requestLine.getMethod(), is("POST"));
-        assertThat(requestLine.getPath(), is("/user/create"));
+        assertEquals(requestLine.getMethod(), HttpMethod.POST);
+        assertEquals(requestLine.getPath(), "/user/create");
     }
 
     @Test
@@ -32,10 +32,10 @@ public class RequestLineTest {
         RequestLine requestLine = new RequestLine(requestString);
 
         Map<String, String> parameters = requestLine.getParameters();
-        assertThat(requestLine.getMethod(), is("GET"));
-        assertThat(requestLine.getPath(), is("/user/create"));
-        assertThat(parameters.get("userId"), is("mingId"));
-        assertThat(parameters.get("password"), is("password"));
+        assertEquals(requestLine.getMethod(), HttpMethod.GET);
+        assertEquals(requestLine.getPath(), "/user/create");
+        assertEquals(parameters.get("userId"), "mingId");
+        assertEquals(parameters.get("password"), "password");
     }
 
     @Test(expected = InvalidRequestLineException.class)

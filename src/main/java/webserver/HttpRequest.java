@@ -2,6 +2,7 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpMethod;
 import util.HttpRequestUtils;
 import util.IOUtils;
 
@@ -32,7 +33,7 @@ public class HttpRequest {
         requestLine = new RequestLine(requestLineString);
         headers = parseHeaders(bufferedReader);
 
-        if (requestLine.getMethod().equals("POST")) {
+        if (requestLine.getMethod().isPost()) {
             parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
             return;
         }
@@ -40,7 +41,7 @@ public class HttpRequest {
         parameters = requestLine.getParameters();
     }
 
-    public String getMethod() {
+    public HttpMethod getMethod() {
         return requestLine.getMethod();
     }
 
