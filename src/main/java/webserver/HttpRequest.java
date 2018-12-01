@@ -1,7 +1,5 @@
 package webserver;
 
-import exception.InvalidRequestLineException;
-import exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
@@ -16,103 +14,46 @@ import java.util.Map;
 
 public class HttpRequest {
     private static final Logger log = LoggerFactory.getLogger(HttpRequest.class);
-    private String method;
-    private String path;
-    private Map<String, String> parameters;
-    private Map<String, String> headers;
+    private Map<String, String> parameters = new HashMap<>();
+    private Map<String, String> headers = new HashMap<>();
+    private RequestLine requestLine;
 
     public HttpRequest() {
-        this.parameters = new HashMap<>();
-        this.headers = new HashMap<>();
     }
 
     public HttpRequest(InputStream in) throws IOException {
         this();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-        String requestLine = bufferedReader.readLine();
-        if (requestLine == null) {
+        String requestLineString = bufferedReader.readLine();
+        if (requestLineString == null) {
             return;
         }
 
-        processRequestLine(requestLine);
+        requestLine = new RequestLine(requestLineString);
+        headers = parseHeaders(bufferedReader);
 
-        this.headers = parseHeaders(bufferedReader);
-
-        if (method.equals("POST")) {
-            this.parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
-            return;
-        }
-    }
-
-    private void processRequestLine(String requestLine) {
-        String[] words = parseRequestLine(requestLine);
-        method = parseMethod(words);
-        path = parseUrlToPath(words);
-
-        if (method.equals("POST")) {
+        if (requestLine.getMethod().equals("POST")) {
+            parameters = parseParams(IOUtils.readData(bufferedReader, getContentLength()));
             return;
         }
 
-        String queryString = HttpRequestUtils.getQueryString(words[1]);
-
-        if (queryString == null) {
-            return;
-        }
-
-        this.parameters = parseParams(queryString);
-    }
-
-    public void setPath(String path) {
-        this.path = path;
+        parameters = requestLine.getParameters();
     }
 
     public String getMethod() {
-        return method;
+        return requestLine.getMethod();
     }
 
     public String getPath() {
-        return path;
-    }
-
-    public Map<String, String> getHeaders() {
-        return headers;
-    }
-
-    public Map<String, String> getParameters() {
-        return parameters;
+        return requestLine.getPath();
     }
 
     public String getParameter(String key) {
-        return this.parameters.get(key);
+        return parameters.get(key);
     }
 
     public String getHeader(String key) {
-        return this.headers.get(key);
-    }
-
-    private String parseMethod(String[] words) {
-        String method = words[0].trim();
-        if (!method.equals("GET") && !method.equals("POST")) {
-            throw new NotFoundException();
-        }
-        return method;
-    }
-
-    private String parseUrlToPath(String[] words) {
-        String url = words[1].trim();
-        if (url.isEmpty()) {
-            throw new NotFoundException();
-        }
-        return HttpRequestUtils.getPath(url);
-    }
-
-    private String[] parseRequestLine(String requestLine) {
-        log.debug("requestLine: {}", requestLine);
-        String[] words = requestLine.split(" ");
-        if (words.length != 3) {
-            throw new InvalidRequestLineException();
-        }
-        return words;
+        return headers.get(key);
     }
 
     private Map<String, String> parseParams(String queryString) {

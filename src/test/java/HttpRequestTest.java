@@ -1,5 +1,4 @@
 import exception.InvalidRequestLineException;
-import exception.NotFoundException;
 import org.junit.Test;
 import webserver.HttpRequest;
 
@@ -35,7 +34,7 @@ public class HttpRequestTest {
         assertEquals("mingId", httpRequest.getParameter("userId"));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = InvalidRequestLineException.class)
     public void test_not_valid_method() throws IOException {
         InputStream in = new FileInputStream(new File(testDirectory) + "/Http_not_valid_method.txt");
         HttpRequest httpRequest = new HttpRequest(in);
