@@ -35,6 +35,18 @@ public class HttpRequestTest {
         assertEquals("mingId", httpRequest.getParameter("userId"));
     }
 
+    @Test
+    public void test_GET_with_params() throws IOException {
+        InputStream in = new FileInputStream(new File(testDirectory) + "/Http_GET_login_cookie.txt");
+        HttpRequest httpRequest = new HttpRequest(in);
+
+        assertEquals(HttpMethod.GET, httpRequest.getMethod());
+        assertEquals("/user/create", httpRequest.getPath());
+        assertEquals("keep-alive", httpRequest.getHeader("Connection"));
+        assertEquals("mingId", httpRequest.getParameter("userId"));
+        assertEquals(true, httpRequest.isLogined());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void test_not_valid_method() throws IOException {
         InputStream in = new FileInputStream(new File(testDirectory) + "/Http_not_valid_method.txt");

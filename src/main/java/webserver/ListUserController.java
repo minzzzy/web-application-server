@@ -2,31 +2,19 @@ package webserver;
 
 import db.DataBase;
 import model.User;
-import util.HttpRequestUtils;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ListUserController implements Controller {
     @Override
     public void service(HttpRequest request, HttpResponse response) throws IOException {
-        String cookieValue = request.getHeader("Cookie");
-        boolean logined = isLogined(cookieValue);
-        if (!logined) {
+        if (!request.isLogined()) {
             response.sendRedirect("/user/login.html");
             return;
         }
         response.forward(request.getPath(), userListHtml(DataBase.findAll()).getBytes());
-    }
-
-    private boolean isLogined(String cookieValue) {
-        Map<String, String> cookie = HttpRequestUtils.parseCookies(cookieValue);
-        if (cookie == null) {
-            return false;
-        }
-        return Boolean.parseBoolean(cookie.get("logined"));
     }
 
     private String userListHtml(Collection<User> users) {
