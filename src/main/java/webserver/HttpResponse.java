@@ -1,5 +1,7 @@
 package webserver;
 
+import db.DataBase;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -19,14 +21,10 @@ public class HttpResponse {
         this.dos = new DataOutputStream(outputStream);
     }
 
-    public void forward(String path, byte[] body) throws IOException {
-        response200Header(body.length, path);
-        responseBody(body);
-    }
-
-    public void forward(String path) throws IOException {
+    public void forward(String path, String accept) throws IOException {
         byte[] body = getBody(path);
-        forward(path, body);
+        response200Header(body.length, accept);
+        responseBody(body);
     }
 
     public void sendRedirect(String path) throws IOException {
@@ -40,9 +38,9 @@ public class HttpResponse {
         dos.write(body, 0, body.length);
     }
 
-    private void response200Header(int lengthOfBodyContent, String path) throws IOException {
+    private void response200Header(int lengthOfBodyContent, String accept) throws IOException {
         dos.writeBytes("HTTP/1.1 200 OK \r\n");
-        dos.writeBytes(getContentType(path));
+        dos.writeBytes(String.format("Content-Type: %s\r\n", accept));
         dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
         dos.writeBytes("\r\n");
     }
@@ -58,18 +56,13 @@ public class HttpResponse {
         }
     }
 
-    private String getContentType(String path) {
-        String fileExtension = path.replaceAll("^.*\\.(.*)$", "$1");
-        if (fileExtension.equals("css")) {
-            return "Content-Type: text/css\r\n";
-        }
-        return "Content-Type: text/html;charset=utf-8\r\n";
-    }
-
     private byte[] getBody(String pathString) throws IOException {
         Path path = new File(homePath + pathString).toPath();
         if (path.toString().equals(homePath)) {
             return "Hello world".getBytes();
+        }
+        if (path.toString().equals("/user/list")) {
+            return UserListHtml.get(DataBase.findAll()).getBytes();
         }
         return Files.readAllBytes(path);
     }

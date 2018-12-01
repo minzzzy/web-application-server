@@ -12,7 +12,7 @@ public class HttpResponseTest {
     @Test
     public void responseForward() throws Exception {
         HttpResponse response = new HttpResponse(createOutputStream("/Http_Forward.txt"));
-        response.forward("/index.html");
+        response.forward("/index.html", "text/html;charset=utf-8");
     }
 
     @Test
