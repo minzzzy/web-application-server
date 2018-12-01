@@ -1,6 +1,7 @@
 package util;
 
-import webserver.*;
+import webserver.HttpRequest;
+import webserver.controller.*;
 
 import java.util.HashMap;
 import java.util.Map;

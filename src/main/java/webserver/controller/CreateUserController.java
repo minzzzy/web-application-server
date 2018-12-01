@@ -1,14 +1,15 @@
-package webserver;
+package webserver.controller;
 
 import db.DataBase;
 import model.User;
+import webserver.HttpRequest;
+import webserver.HttpResponse;
 
 import java.io.IOException;
 
-public class CreateUserController implements Controller {
-
+public class CreateUserController extends AbstractController {
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
+    public void doPost(HttpRequest request, HttpResponse response) throws IOException {
         saveUser(request);
         response.sendRedirect("/index.html");
     }

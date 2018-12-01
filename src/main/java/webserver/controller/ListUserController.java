@@ -1,15 +1,17 @@
-package webserver;
+package webserver.controller;
 
 import db.DataBase;
 import model.User;
+import webserver.HttpRequest;
+import webserver.HttpResponse;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-public class ListUserController implements Controller {
+public class ListUserController extends AbstractController {
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
+    public void doGet(HttpRequest request, HttpResponse response) throws IOException {
         if (!request.isLogined()) {
             response.sendRedirect("/user/login.html");
             return;

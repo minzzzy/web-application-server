@@ -1,13 +1,15 @@
-package webserver;
+package webserver.controller;
 
 import db.DataBase;
 import model.User;
+import webserver.HttpRequest;
+import webserver.HttpResponse;
 
 import java.io.IOException;
 
-public class LoginController implements Controller {
+public class LoginController extends AbstractController {
     @Override
-    public void service(HttpRequest request, HttpResponse response) throws IOException {
+    public void doPost(HttpRequest request, HttpResponse response) throws IOException {
         boolean isLogined = login(request);
         if (!isLogined) {
             response.sendRedirect("/user/login_failed.html");
