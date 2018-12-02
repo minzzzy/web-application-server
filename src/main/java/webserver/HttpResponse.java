@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class HttpResponse {
     private static String homePath = "./webapp";
@@ -57,13 +58,27 @@ public class HttpResponse {
     }
 
     private byte[] getBody(String pathString) throws IOException {
+        if (pathString.equals("/user/list")) {
+            return UserListHtml.get(DataBase.findAll()).getBytes();
+        }
         Path path = new File(homePath + pathString).toPath();
         if (path.toString().equals(homePath)) {
             return "Hello world".getBytes();
         }
-        if (path.toString().equals("/user/list")) {
-            return UserListHtml.get(DataBase.findAll()).getBytes();
-        }
         return Files.readAllBytes(path);
+    }
+
+    public void addCookie(String cookie) {
+        if (!Pattern.matches("(.*)=(.*)", cookie)) {
+            return;
+        }
+        String value = headers.get("Set-Cookie");
+        if (value == null) {
+            headers.put("Set-Cookie", cookie);
+            return;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        String cookieValue = stringBuilder.append(value).append("; ").append(cookie).toString();
+        headers.put("Set-Cookie", cookieValue);
     }
 }

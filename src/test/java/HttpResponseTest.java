@@ -24,7 +24,15 @@ public class HttpResponseTest {
     @Test
     public void responseCookies() throws Exception {
         HttpResponse response = new HttpResponse(createOutputStream("/Http_Cookie.txt"));
-        response.addHeader("Set-Cookie", "logined=true"); // Todo: 쿠키가 여러개 일때 ; 이걸로 연결되는거 addCookie나 StringBuilder로 하는 거
+        response.addCookie("logined=true");
+        response.addCookie("abc=def");
+        response.sendRedirect("/index.html");
+    }
+
+    @Test
+    public void responseNotSetCookieForWrongPattern() throws Exception {
+        HttpResponse response = new HttpResponse(createOutputStream("/Http_Cookie_wrong.txt"));
+        response.addCookie("logined:true");
         response.sendRedirect("/index.html");
     }
 
