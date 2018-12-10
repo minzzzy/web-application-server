@@ -8,6 +8,13 @@ import webserver.HttpResponse;
 import java.io.IOException;
 
 public class CreateUserController extends AbstractController {
+    private static final String PATH = "/user/create";
+
+    @Override
+    public String getPath() {
+        return PATH;
+    }
+
     @Override
     public void doPost(HttpRequest request, HttpResponse response) throws IOException {
         saveUser(request);

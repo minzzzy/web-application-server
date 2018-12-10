@@ -11,12 +11,16 @@ public class ControllerMapper {
     private Controller defaultController = new DefaultController();
 
     public ControllerMapper() {
-        controllerMapper.put("/user/create", new CreateUserController());
-        controllerMapper.put("/user/login", new LoginController());
-        controllerMapper.put("/user/list", new ListUserController());
+        putPathToMapper(new CreateUserController());
+        putPathToMapper(new LoginController());
+        putPathToMapper(new ListUserController());
     }
 
     public Controller getController(HttpRequest request) {
         return controllerMapper.getOrDefault(request.getPath(), defaultController);
+    }
+
+    private void putPathToMapper(Controller controller) {
+        controllerMapper.put(controller.getPath(), controller);
     }
 }
