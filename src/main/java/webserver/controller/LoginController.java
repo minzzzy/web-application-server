@@ -8,6 +8,13 @@ import webserver.HttpResponse;
 import java.io.IOException;
 
 public class LoginController extends AbstractController {
+    private static final String PATH = "/user/login";
+
+    @Override
+    public String getPath() {
+        return PATH;
+    }
+
     @Override
     public void doPost(HttpRequest request, HttpResponse response) throws IOException {
         boolean isLogined = login(request);
