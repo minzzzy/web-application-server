@@ -1,5 +1,6 @@
 package webserver.controller;
 
+import util.SessionUtils;
 import webserver.HttpRequest;
 import webserver.HttpResponse;
 
@@ -15,7 +16,7 @@ public class ListUserController extends AbstractController {
 
     @Override
     public void doGet(HttpRequest request, HttpResponse response) throws IOException {
-        if (!request.isLogined()) {
+        if (SessionUtils.isLogined(request.getSession())) {
             response.sendRedirect("/user/login.html");
             return;
         }

@@ -13,7 +13,6 @@ import java.util.UUID;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
-    private static final String HOME_PATH = "./webapp";
 
     private Socket connection;
 

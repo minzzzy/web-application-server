@@ -4,6 +4,7 @@ import db.DataBase;
 import model.User;
 import webserver.HttpRequest;
 import webserver.HttpResponse;
+import webserver.HttpSession;
 
 import java.io.IOException;
 
@@ -17,12 +18,10 @@ public class LoginController extends AbstractController {
 
     @Override
     public void doPost(HttpRequest request, HttpResponse response) throws IOException {
-        boolean isLogined = login(request);
-        if (!isLogined) {
+        if (!login(request)) {
             response.sendRedirect("/user/login_failed.html");
             return;
         }
-        response.addHeader("Set-Cookie", "logined=true");
         response.sendRedirect("/index.html");
     }
 
@@ -34,6 +33,8 @@ public class LoginController extends AbstractController {
         if (!request.getParameter("password").equals(user.getPassword())) {
             return false;
         }
+        HttpSession session = request.getSession();
+        session.setAttribute("user", user);
         return true;
     }
 }

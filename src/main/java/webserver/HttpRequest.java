@@ -62,14 +62,8 @@ public class HttpRequest {
         return new HttpCookie(getHeader("Cookie"));
     }
 
-    public boolean isLogined() {
-        String cookieValue = headers.get("Cookie");
-        if (cookieValue == null) {
-            return false;
-        }
-
-        Map<String, String> cookies = HttpRequestUtils.parseCookies(cookieValue);
-        return Boolean.parseBoolean(cookies.get("logined"));
+    public HttpSession getSession() {
+        return HttpSessions.getSession(getCookies().getCookie("JSESSIONID"));
     }
 
     private Map<String, String> parseParams(String queryString) {

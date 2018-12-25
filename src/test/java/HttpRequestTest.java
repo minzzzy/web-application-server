@@ -38,7 +38,6 @@ public class HttpRequestTest {
         assertEquals("/user/create", httpRequest.getPath());
         assertEquals("keep-alive", httpRequest.getHeader("Connection"));
         assertEquals("mingId", httpRequest.getParameter("userId"));
-        assertEquals(true, httpRequest.isLogined());
     }
 
     @Test
@@ -46,7 +45,7 @@ public class HttpRequestTest {
         HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_GET_login_cookie.txt"));
 
         assertEquals(HttpMethod.GET, httpRequest.getMethod());
-        assertEquals("true", httpRequest.getCookies().getCookie("logined"));
+        assertEquals("1234-5678", httpRequest.getCookies().getCookie("JSESSIONID"));
     }
 
     @Test(expected = IllegalArgumentException.class)
