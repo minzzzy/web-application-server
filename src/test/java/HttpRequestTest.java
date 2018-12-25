@@ -3,10 +3,7 @@ import org.junit.Test;
 import util.HttpMethod;
 import webserver.HttpRequest;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -15,8 +12,7 @@ public class HttpRequestTest {
 
     @Test
     public void test_GET() throws IOException {
-        InputStream in = new FileInputStream(new File(testDirectory) + "/Http_GET.txt");
-        HttpRequest httpRequest = new HttpRequest(in);
+        HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_GET.txt"));
 
         assertEquals(HttpMethod.GET, httpRequest.getMethod());
         assertEquals("/user/create", httpRequest.getPath());
@@ -26,8 +22,7 @@ public class HttpRequestTest {
 
     @Test
     public void test_POST() throws IOException {
-        InputStream in = new FileInputStream(new File(testDirectory) + "/Http_POST.txt");
-        HttpRequest httpRequest = new HttpRequest(in);
+        HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_POST.txt"));
 
         assertEquals(HttpMethod.POST, httpRequest.getMethod());
         assertEquals("/user/create", httpRequest.getPath());
@@ -37,8 +32,7 @@ public class HttpRequestTest {
 
     @Test
     public void test_GET_with_params() throws IOException {
-        InputStream in = new FileInputStream(new File(testDirectory) + "/Http_GET_login_cookie.txt");
-        HttpRequest httpRequest = new HttpRequest(in);
+        HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_GET_login_cookie.txt"));
 
         assertEquals(HttpMethod.GET, httpRequest.getMethod());
         assertEquals("/user/create", httpRequest.getPath());
@@ -47,15 +41,25 @@ public class HttpRequestTest {
         assertEquals(true, httpRequest.isLogined());
     }
 
+    @Test
+    public void test_GET_with_cookie() throws IOException {
+        HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_GET_login_cookie.txt"));
+
+        assertEquals(HttpMethod.GET, httpRequest.getMethod());
+        assertEquals("true", httpRequest.getCookies().getCookie("logined"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void test_not_valid_method() throws IOException {
-        InputStream in = new FileInputStream(new File(testDirectory) + "/Http_not_valid_method.txt");
-        HttpRequest httpRequest = new HttpRequest(in);
+        HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_not_valid_method.txt"));
     }
 
     @Test(expected = InvalidRequestLineException.class)
     public void test_no_method() throws IOException {
-        InputStream in = new FileInputStream(new File(testDirectory) + "/Http_no_method.txt");
-        HttpRequest httpRequest = new HttpRequest(in);
+        HttpRequest httpRequest = new HttpRequest(getIntputStreamFromFile("/Http_no_method.txt"));
+    }
+
+    private InputStream getIntputStreamFromFile(String fileName) throws FileNotFoundException {
+        return new FileInputStream(new File(testDirectory) + fileName);
     }
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.UUID;
 
 public class RequestHandler extends Thread {
     private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
@@ -27,6 +28,11 @@ public class RequestHandler extends Thread {
         try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
             HttpRequest httpRequest = new HttpRequest(in);
             HttpResponse httpResponse = new HttpResponse(out);
+
+            if (httpRequest.getCookies().getCookie("JSESSIONID") == null) {
+                httpResponse.addCookie(String.format("JSESSIONID=%s", UUID.randomUUID()));
+            }
+
             ControllerMapper controllerMapper = new ControllerMapper();
 
             Controller controller = controllerMapper.getController(httpRequest);
@@ -36,4 +42,5 @@ public class RequestHandler extends Thread {
             log.error(e.getMessage());
         }
     }
+
 }
