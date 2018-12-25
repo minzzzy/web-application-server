@@ -2,6 +2,7 @@ package webserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.HttpCookie;
 import util.HttpMethod;
 import util.HttpRequestUtils;
 import util.IOUtils;
@@ -55,6 +56,10 @@ public class HttpRequest {
 
     public String getHeader(String key) {
         return headers.get(key);
+    }
+
+    public HttpCookie getCookies() {
+        return new HttpCookie(getHeader("Cookie"));
     }
 
     public boolean isLogined() {
